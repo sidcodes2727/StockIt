@@ -1,0 +1,223 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   StockFlow design tokens
+
+   A near-monochrome cool-slate ramp with a single cobalt accent. The accent is
+   spent only on primary actions, the active nav item and the focused chart
+   series — everything else is neutral ink and hairlines.
+
+   The four data/status colours in each mode were computed and validated with
+   the dataviz palette validator (lightness band, chroma floor, CVD separation,
+   normal-vision floor, contrast vs surface), not eyeballed:
+
+     light  primary #2049CE · success #0E8F6F · warning #D97706 · danger #9F1239
+     dark   primary #5B77EE · success #12A57E · warning #C87A08 · danger #E23A72
+
+   Dark mode is a separate selection from the same ramps validated against the
+   dark surface — not an automatic inversion of the light steps.
+   ========================================================================== */
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 222 45% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 45% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 45% 11%;
+
+    --primary: 226 73% 47%; /* #2049CE */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 20% 96%;
+    --secondary-foreground: 222 40% 18%;
+
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 16% 44%;
+
+    --accent: 226 60% 96%;
+    --accent-foreground: 226 73% 38%;
+
+    --success: 165 82% 31%; /* #0E8F6F */
+    --success-foreground: 0 0% 100%;
+
+    --warning: 32 95% 44%; /* #D97706 */
+    --warning-foreground: 0 0% 100%;
+
+    --destructive: 343 80% 35%; /* #9F1239 */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 24% 91%;
+    --input: 214 22% 86%;
+    --ring: 226 73% 47%;
+
+    --shadow-tint: 222 45% 25%;
+    --radius: 0.5rem;
+
+    /* Chart surface + series. Sales trend is deliberately single-series. */
+    --chart-surface: 0 0% 100%;
+    --chart-1: 226 73% 47%;
+    --chart-2: 165 82% 31%;
+    --chart-3: 32 95% 44%;
+    --chart-4: 343 80% 35%;
+    --chart-grid: 214 24% 91%;
+  }
+
+  .dark {
+    --background: 221 44% 7%; /* #0a0f1a */
+    --foreground: 210 28% 94%;
+
+    --card: 219 42% 11%; /* #101827 — the validated dark chart surface */
+    --card-foreground: 210 28% 94%;
+
+    --popover: 219 40% 13%;
+    --popover-foreground: 210 28% 94%;
+
+    --primary: 229 81% 65%; /* #5B77EE */
+    --primary-foreground: 226 60% 10%;
+
+    --secondary: 218 28% 16%;
+    --secondary-foreground: 210 24% 90%;
+
+    --muted: 218 28% 16%;
+    --muted-foreground: 215 18% 64%;
+
+    --accent: 224 40% 20%;
+    --accent-foreground: 229 81% 78%;
+
+    --success: 164 80% 36%; /* #12A57E */
+    --success-foreground: 165 90% 8%;
+
+    --warning: 36 92% 41%; /* #C87A08 */
+    --warning-foreground: 36 95% 8%;
+
+    --destructive: 340 74% 56%; /* #E23A72 */
+    --destructive-foreground: 340 90% 10%;
+
+    --border: 217 24% 20%;
+    --input: 217 22% 24%;
+    --ring: 229 81% 65%;
+
+    --shadow-tint: 221 60% 2%;
+
+    --chart-surface: 219 42% 11%;
+    --chart-1: 229 81% 65%;
+    --chart-2: 164 80% 36%;
+    --chart-3: 36 92% 41%;
+    --chart-4: 340 74% 56%;
+    --chart-grid: 217 24% 20%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv11" 1;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Every numeral in the app is monospaced and tabular, so quantities, money
+     and reference numbers line up column-to-column and don't shift width as
+     they change. This is the type decision the whole UI is built around. */
+  .num {
+    @apply font-mono tabular-nums;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+
+  ::selection {
+    @apply bg-primary/20;
+  }
+
+  /* Keyboard focus is always visible; pointer focus is not decorated. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full border-[3px] border-solid border-transparent bg-border bg-clip-content;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/40 bg-clip-content;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* Table headers: small, uppercase, wide-tracked — the operations-console
+     register. Kept here because it repeats across nine data tables. */
+  .th-label {
+    @apply text-[11px] font-semibold uppercase tracking-[0.07em] text-muted-foreground;
+  }
+
+  .card-surface {
+    @apply rounded-lg border border-border bg-card;
+  }
+
+  /* Recharts injects its own focus outline on the wrapper; we don't want it. */
+  .recharts-wrapper:focus,
+  .recharts-surface:focus {
+    outline: none;
+  }
+}
+
+@media print {
+  /* The printable invoice is the only print target: drop the shell entirely. */
+  .no-print,
+  aside,
+  header.app-topbar {
+    display: none !important;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  .print-sheet {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  @page {
+    margin: 14mm;
+  }
+}
