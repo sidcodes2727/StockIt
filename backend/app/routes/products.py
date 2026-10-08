@@ -1,6 +1,7 @@
 """Product CRUD, stock adjustments, low-stock listing and CSV import."""
 
 from __future__ import annotations
+from typing import Optional
 
 import csv
 import io
@@ -59,7 +60,7 @@ def _get_or_404(product_id: int) -> Product:
     return product
 
 
-def _validate_relations(category_id: int | None, supplier_id: int | None) -> None:
+def _validate_relations(category_id: Optional[int], supplier_id: Optional[int]) -> None:
     """Reject unknown FKs with a field-level message instead of a raw 409."""
     errors: dict[str, list[str]] = {}
     if category_id is not None and db.session.get(Category, category_id) is None:
@@ -75,7 +76,7 @@ def _validate_relations(category_id: int | None, supplier_id: int | None) -> Non
         )
 
 
-def _assert_sku_available(sku: str, exclude_id: int | None = None) -> None:
+def _assert_sku_available(sku: str, exclude_id: Optional[int] = None) -> None:
     query = select(Product).where(func.lower(Product.sku) == sku.lower())
     if exclude_id is not None:
         query = query.where(Product.id != exclude_id)
@@ -390,7 +391,7 @@ IMPORT_COLUMNS = (
 )
 
 
-def _to_decimal(raw: str | None, field: str, row_no: int) -> Decimal:
+def _to_decimal(raw: Optional[str], field: str, row_no: int) -> Decimal:
     if raw is None or str(raw).strip() == "":
         return Decimal("0.00")
     try:
@@ -402,7 +403,7 @@ def _to_decimal(raw: str | None, field: str, row_no: int) -> Decimal:
     return value
 
 
-def _to_int(raw: str | None, field: str, row_no: int) -> int:
+def _to_int(raw: Optional[str], field: str, row_no: int) -> int:
     if raw is None or str(raw).strip() == "":
         return 0
     try:

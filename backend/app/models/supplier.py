@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional
 
 from datetime import datetime
 
@@ -14,10 +15,10 @@ class Supplier(db.Model):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(160), nullable=False, index=True)
-    contact_person: Mapped[str | None] = mapped_column(String(120), nullable=True)
-    phone: Mapped[str | None] = mapped_column(String(40), nullable=True)
-    email: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    address: Mapped[str | None] = mapped_column(Text, nullable=True)
+    contact_person: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
+    phone: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
+    email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    address: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now(), default=utcnow
     )

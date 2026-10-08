@@ -37,6 +37,9 @@ def _normalise_database_url(raw: str | None) -> str | None:
     url = raw.strip().strip('"').strip("'")
     if not url:
         return None
+    
+    if url.startswith("sqlite"):
+        return url
 
     for prefix, replacement in (
         ("postgres://", "postgresql+psycopg://"),

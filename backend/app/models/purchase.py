@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional
 
 from datetime import date, datetime
 from decimal import Decimal
@@ -39,7 +40,7 @@ class Purchase(db.Model):
     product_id: Mapped[int] = mapped_column(
         ForeignKey("products.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    supplier_id: Mapped[int | None] = mapped_column(
+    supplier_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("suppliers.id", ondelete="SET NULL"), nullable=True, index=True
     )
 
@@ -47,7 +48,7 @@ class Purchase(db.Model):
     cost_price: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     purchase_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
 
-    created_by: Mapped[int | None] = mapped_column(
+    created_by: Mapped[Optional[int]] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
     created_at: Mapped[datetime] = mapped_column(
@@ -55,8 +56,8 @@ class Purchase(db.Model):
     )
 
     product: Mapped["Product"] = relationship(back_populates="purchases")
-    supplier: Mapped["Supplier | None"] = relationship(back_populates="purchases")
-    creator: Mapped["User | None"] = relationship(back_populates="purchases")
+    supplier: Mapped[Optional["Supplier"]] = relationship(back_populates="purchases")
+    creator: Mapped[Optional["User"]] = relationship(back_populates="purchases")
 
     @property
     def line_total(self) -> Decimal:

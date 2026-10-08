@@ -1,6 +1,7 @@
 """Dashboard aggregates: summary cards, recent activity, sales trend."""
 
 from __future__ import annotations
+from typing import Optional
 
 from datetime import date, timedelta
 
@@ -20,7 +21,7 @@ dashboard_bp = Blueprint("dashboard", __name__, url_prefix="/dashboard")
 product_schema = ProductSchema()
 
 
-def _percent_change(current: float, previous: float) -> float | None:
+def _percent_change(current: float, previous: float) -> Optional[float]:
     """Signed percentage change, or ``None`` when there is no baseline."""
     if previous == 0:
         return None if current == 0 else 100.0

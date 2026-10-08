@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional
 
 from datetime import datetime
 
@@ -16,7 +17,7 @@ class Category(db.Model):
     name: Mapped[str] = mapped_column(
         String(120), nullable=False, unique=True, index=True
     )
-    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now(), default=utcnow
     )

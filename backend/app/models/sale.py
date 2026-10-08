@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional
 
 from datetime import date, datetime
 from decimal import Decimal
@@ -41,10 +42,10 @@ class Sale(db.Model):
 
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
     sale_price: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
-    customer_name: Mapped[str | None] = mapped_column(String(160), nullable=True)
+    customer_name: Mapped[Optional[str]] = mapped_column(String(160), nullable=True)
     sale_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
 
-    created_by: Mapped[int | None] = mapped_column(
+    created_by: Mapped[Optional[int]] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
     created_at: Mapped[datetime] = mapped_column(
@@ -52,7 +53,7 @@ class Sale(db.Model):
     )
 
     product: Mapped["Product"] = relationship(back_populates="sales")
-    creator: Mapped["User | None"] = relationship(back_populates="sales")
+    creator: Mapped[Optional["User"]] = relationship(back_populates="sales")
 
     @property
     def line_total(self) -> Decimal:

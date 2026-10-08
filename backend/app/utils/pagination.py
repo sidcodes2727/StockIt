@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime, timedelta
-from typing import Any, Iterable
+from typing import Any, Iterable, Optional
 
 from flask import request
 from sqlalchemy import asc, desc
@@ -47,7 +47,7 @@ def apply_sort(query, sortable: dict[str, Any], default: str, default_dir: str =
     return query.order_by(direction(column), sortable[default])
 
 
-def paginate(query, schema=None, *, page: int | None = None, per_page: int | None = None):
+def paginate(query, schema=None, *, page: Optional[int] = None, per_page: Optional[int] = None):
     """Run a paginated query and build the standard list envelope."""
     if page is None or per_page is None:
         page, per_page = get_pagination_args()
@@ -72,7 +72,7 @@ def paginate(query, schema=None, *, page: int | None = None, per_page: int | Non
     }
 
 
-def parse_date_arg(name: str, default: date | None = None) -> date | None:
+def parse_date_arg(name: str, default: Optional[date] = None) -> Optional[date]:
     """Parse an ISO ``YYYY-MM-DD`` query parameter."""
     raw = request.args.get(name)
     if not raw:

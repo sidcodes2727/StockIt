@@ -18,7 +18,7 @@ field-level messages back onto form inputs.
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import Any, Optional
 
 from marshmallow import ValidationError
 from sqlalchemy.exc import IntegrityError, OperationalError, SQLAlchemyError
@@ -39,8 +39,8 @@ class ApiError(Exception):
         self,
         message: str,
         *,
-        status_code: int | None = None,
-        code: str | None = None,
+        status_code: Optional[int] = None,
+        code: Optional[str] = None,
         details: Any = None,
     ) -> None:
         super().__init__(message)

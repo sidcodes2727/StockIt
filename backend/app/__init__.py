@@ -1,6 +1,7 @@
 """Application factory."""
 
 from __future__ import annotations
+from typing import Optional
 
 import logging
 
@@ -12,7 +13,7 @@ from .errors import register_error_handlers
 from .extensions import bcrypt, cors, db, jwt, migrate
 
 
-def create_app(config_name: str | None = None) -> Flask:
+def create_app(config_name: Optional[str] = None) -> Flask:
     app = Flask(__name__)
     app.config.from_object(get_config(config_name))
 

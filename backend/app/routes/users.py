@@ -1,6 +1,7 @@
 """User management. Admin-only — enforced by ``@admin_required`` on every route."""
 
 from __future__ import annotations
+from typing import Optional
 
 from flask import Blueprint, request
 from flask_jwt_extended import current_user
@@ -31,7 +32,7 @@ def _get_or_404(user_id: int) -> User:
     return user
 
 
-def _assert_email_available(email: str, exclude_id: int | None = None) -> None:
+def _assert_email_available(email: str, exclude_id: Optional[int] = None) -> None:
     query = select(User).where(func.lower(User.email) == email.lower())
     if exclude_id is not None:
         query = query.where(User.id != exclude_id)

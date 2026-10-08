@@ -1,6 +1,7 @@
 """Generation of human-readable identifiers: SKUs, invoice and PO numbers."""
 
 from __future__ import annotations
+from typing import Optional
 
 import re
 from datetime import date
@@ -12,7 +13,7 @@ from ..extensions import db
 _NON_ALNUM = re.compile(r"[^A-Za-z0-9]+")
 
 
-def slug_prefix(text: str | None, fallback: str = "GEN", length: int = 3) -> str:
+def slug_prefix(text: Optional[str], fallback: str = "GEN", length: int = 3) -> str:
     """Build a short uppercase prefix from arbitrary text (e.g. a category name)."""
     if not text:
         return fallback
@@ -22,7 +23,7 @@ def slug_prefix(text: str | None, fallback: str = "GEN", length: int = 3) -> str
     return cleaned[:length].ljust(length, "X")
 
 
-def generate_sku(category_name: str | None = None) -> str:
+def generate_sku(category_name: Optional[str] = None) -> str:
     """Produce a unique SKU such as ``MED-0007``.
 
     Scans the existing numeric tails for the prefix and takes ``max + 1``, then

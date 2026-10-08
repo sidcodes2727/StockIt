@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional
 
 from decimal import Decimal
 
@@ -34,10 +35,10 @@ class Product(TimestampMixin, db.Model):
         String(64), nullable=False, unique=True, index=True
     )
 
-    category_id: Mapped[int | None] = mapped_column(
+    category_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("categories.id", ondelete="SET NULL"), nullable=True, index=True
     )
-    supplier_id: Mapped[int | None] = mapped_column(
+    supplier_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("suppliers.id", ondelete="SET NULL"), nullable=True, index=True
     )
 
@@ -50,11 +51,11 @@ class Product(TimestampMixin, db.Model):
     quantity: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     reorder_level: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
-    description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    image_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
 
-    category: Mapped["Category | None"] = relationship(back_populates="products")
-    supplier: Mapped["Supplier | None"] = relationship(back_populates="products")
+    category: Mapped[Optional["Category"]] = relationship(back_populates="products")
+    supplier: Mapped[Optional["Supplier"]] = relationship(back_populates="products")
     purchases: Mapped[list["Purchase"]] = relationship(
         back_populates="product", cascade="all, delete-orphan", passive_deletes=True
     )

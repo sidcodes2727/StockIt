@@ -1,6 +1,7 @@
 """Category CRUD."""
 
 from __future__ import annotations
+from typing import Optional
 
 from flask import Blueprint, request
 from sqlalchemy import func, select
@@ -41,7 +42,7 @@ def _get_or_404(category_id: int) -> Category:
     return category
 
 
-def _assert_name_available(name: str, exclude_id: int | None = None) -> None:
+def _assert_name_available(name: str, exclude_id: Optional[int] = None) -> None:
     query = select(Category).where(func.lower(Category.name) == name.lower())
     if exclude_id is not None:
         query = query.where(Category.id != exclude_id)
