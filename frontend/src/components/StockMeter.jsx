@@ -49,7 +49,7 @@ export function StockMeter({
 
   return (
     <div
-      className={cn("h-1 w-full min-w-[52px] overflow-hidden rounded-full bg-muted", className)}
+      className={cn("relative h-1.5 w-full min-w-[52px] rounded-full bg-muted", className)}
       role="img"
       aria-label={
         hasThreshold
@@ -57,22 +57,22 @@ export function StockMeter({
           : `${number(qty)} in stock`
       }
     >
-      <div className="relative h-full w-full">
+      <div className="relative h-full w-full overflow-hidden rounded-full">
         <div
           className={cn(
-            "h-full rounded-full transition-[width] duration-500 ease-out",
+            "h-full rounded-full transition-[width] duration-700 ease-out",
             FILL_STYLES[state] ?? "bg-muted-foreground",
           )}
           style={{ width: `${fill}%` }}
         />
-        {hasThreshold && showTick && (
-          <span
-            aria-hidden="true"
-            className="absolute top-0 h-full w-px bg-foreground/35"
-            style={{ left: `${TICK_POSITION}%` }}
-          />
-        )}
       </div>
+      {hasThreshold && showTick && (
+        <span
+          aria-hidden="true"
+          className="absolute -top-[3px] h-[12px] w-[2px] -translate-x-1/2 rounded-full bg-foreground/40"
+          style={{ left: `${TICK_POSITION}%` }}
+        />
+      )}
     </div>
   );
 }

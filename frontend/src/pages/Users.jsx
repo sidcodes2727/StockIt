@@ -42,7 +42,7 @@ const DEFAULTS = {
 
 export default function Users() {
   const { user: currentUser } = useAuth();
-  const { params, setParams, reset, isFiltered } = useTableParams(DEFAULTS);
+  const { params, setParams, reset } = useTableParams(DEFAULTS);
   
   const [formOpen, setFormOpen] = React.useState(false);
   const [editing, setEditing] = React.useState(null);

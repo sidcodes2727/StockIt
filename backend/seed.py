@@ -364,7 +364,7 @@ def force_stock_states(products: list[Product]) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Seed the StockFlow database.")
+    parser = argparse.ArgumentParser(description="Seed the StockIt database.")
     parser.add_argument(
         "--reset",
         action="store_true",

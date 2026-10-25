@@ -5,6 +5,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -24,6 +25,7 @@ import { cn, money, moneyCompact, number } from "@/lib/utils";
  *
  * The form follows the range: seven days are seven discrete things you compare,
  * so they're bars; a month or a quarter is a shape you read, so it's an area.
+ * Today's bar takes the highlight colour — the one you're still filling in.
  */
 export function SalesTrendChart({ data, days, loading, className }) {
   const series = data?.series ?? [];
@@ -87,21 +89,36 @@ export function SalesTrendChart({ data, days, loading, className }) {
     <div className={cn("h-[260px] w-full", className)}>
       <ResponsiveContainer width="100%" height="100%">
         {asBars ? (
-          <BarChart {...shared} barCategoryGap={days <= 7 ? "34%" : "22%"}>
+          <BarChart {...shared} barCategoryGap={days <= 7 ? "30%" : "20%"}>
+            <defs>
+              <linearGradient id="bar-fill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="hsl(var(--chart-1))" stopOpacity={1} />
+                <stop offset="100%" stopColor="hsl(var(--chart-1))" stopOpacity={0.55} />
+              </linearGradient>
+            </defs>
             {axes}
             <Bar
               dataKey="revenue"
               name="Revenue"
-              fill="hsl(var(--chart-1))"
-              radius={[4, 4, 0, 0]}
-              maxBarSize={54}
-            />
+              radius={[6, 6, 2, 2]}
+              maxBarSize={56}
+              animationDuration={700}
+            >
+              {series.map((point, index) => (
+                <Cell
+                  key={point.date ?? index}
+                  fill={
+                    index === series.length - 1 ? "hsl(var(--chart-highlight))" : "url(#bar-fill)"
+                  }
+                />
+              ))}
+            </Bar>
           </BarChart>
         ) : (
           <AreaChart {...shared}>
             <defs>
               <linearGradient id="trend-fill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(var(--chart-1))" stopOpacity={0.18} />
+                <stop offset="0%" stopColor="hsl(var(--chart-1))" stopOpacity={0.32} />
                 <stop offset="100%" stopColor="hsl(var(--chart-1))" stopOpacity={0.01} />
               </linearGradient>
             </defs>
@@ -111,8 +128,9 @@ export function SalesTrendChart({ data, days, loading, className }) {
               dataKey="revenue"
               name="Revenue"
               stroke="hsl(var(--chart-1))"
-              strokeWidth={2}
+              strokeWidth={2.25}
               fill="url(#trend-fill)"
+              animationDuration={900}
               activeDot={{
                 r: 4,
                 strokeWidth: 2,
@@ -133,7 +151,7 @@ function TrendTooltip({ active, payload }) {
   const point = payload[0].payload;
 
   return (
-    <div className="min-w-[168px] rounded-lg border border-border bg-popover p-3 shadow-overlay">
+    <div className="min-w-[176px] rounded-xl border border-border bg-popover/95 p-3 shadow-overlay backdrop-blur-md">
       <p className="text-[11.5px] font-medium text-muted-foreground">{point.label}</p>
       <p className="num mt-1 text-[16px] font-semibold leading-none tracking-[-0.02em]">
         {money(point.revenue)}
@@ -162,7 +180,7 @@ export function RangeToggle({ value, onChange, options = [7, 30, 90], className 
       role="radiogroup"
       aria-label="Trend range"
       className={cn(
-        "inline-flex items-center gap-0.5 rounded-md border border-border bg-muted/50 p-0.5",
+        "inline-flex items-center gap-0.5 rounded-lg border border-border bg-muted/50 p-0.5",
         className,
       )}
     >
@@ -176,10 +194,10 @@ export function RangeToggle({ value, onChange, options = [7, 30, 90], className 
             aria-checked={active}
             onClick={() => onChange(option)}
             className={cn(
-              "num rounded-[5px] px-2.5 py-1 text-[12px] font-medium transition-colors",
+              "num rounded-md px-2.5 py-1 text-[12px] font-medium transition-all",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               active
-                ? "bg-card text-foreground shadow-soft"
+                ? "bg-foreground text-background shadow-raised"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >

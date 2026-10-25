@@ -6,14 +6,15 @@ import {
   Boxes,
   IndianRupee,
   PackageCheck,
+  PackagePlus,
   Plus,
   ShoppingCart,
   TrendingUp,
   TriangleAlert,
 } from "lucide-react";
 
+import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { EmptyState, ErrorState } from "@/components/EmptyState";
-import { PageHeader } from "@/components/PageHeader";
 import { RangeToggle, SalesTrendChart } from "@/components/SalesTrendChart";
 import { StatCard } from "@/components/StatCard";
 import { StockStatusBadge } from "@/components/StatusBadge";
@@ -30,12 +31,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useAuth } from "@/hooks/useAuth";
-import {
-  useDashboardSummary,
-  useSalesTrend,
-  useTopProducts,
-} from "@/hooks/queries";
-import { formatDate, money, moneyCompact, number, relativeTime } from "@/lib/utils";
+import { useDashboardSummary, useSalesTrend, useTopProducts } from "@/hooks/queries";
+import { cn, formatDate, money, moneyCompact, number, relativeTime } from "@/lib/utils";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -43,31 +40,16 @@ export default function Dashboard() {
 
   const summary = useDashboardSummary();
   const trend = useSalesTrend(days);
+  const week = useSalesTrend(7);
   const top = useTopProducts({ days: 30, limit: 5 });
 
   const cards = summary.data?.cards;
   const counts = summary.data?.counts;
+  const weekRevenue = week.data?.series?.map((point) => point.revenue);
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        eyebrow={formatDate(new Date())}
-        title={`${greeting()}, ${user?.name?.split(" ")[0] ?? "there"}`}
-        description="Today's movement, what's running low, and where the stock value sits."
-      >
-        <Button variant="outline" size="sm" asChild>
-          <Link to="/purchases?new=1">
-            <ArrowDownLeft />
-            Stock in
-          </Link>
-        </Button>
-        <Button size="sm" asChild>
-          <Link to="/sales?new=1">
-            <Plus />
-            New sale
-          </Link>
-        </Button>
-      </PageHeader>
+    <div className="space-y-5">
+      <Hero user={user} cards={cards} loading={summary.isLoading} />
 
       {summary.isError ? (
         <Card>
@@ -77,25 +59,36 @@ export default function Dashboard() {
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {summary.isLoading ? (
             Array.from({ length: 4 }).map((_, index) => (
-              <Skeleton key={index} className="h-[128px]" />
+              <Skeleton key={index} className="h-[148px] rounded-xl" />
             ))
           ) : (
             <>
               <StatCard
-                label="Total products"
-                value={number(cards.total_products)}
-                icon={Boxes}
-                hint={`${number(cards.total_units)} units on hand`}
+                label="Today's sales"
+                value={<AnimatedNumber value={cards.today_revenue} format={money} />}
+                icon={ShoppingCart}
+                delta={cards.today_vs_yesterday_pct}
+                deltaLabel="vs yesterday"
+                spark={weekRevenue}
+                highlight
               />
               <StatCard
                 label="Stock value"
-                value={moneyCompact(cards.stock_value_at_cost)}
+                value={<AnimatedNumber value={cards.stock_value_at_cost} format={moneyCompact} />}
                 icon={IndianRupee}
                 hint={`${moneyCompact(cards.stock_value_at_retail)} at retail`}
+                style={{ animationDelay: "60ms" }}
+              />
+              <StatCard
+                label="Total products"
+                value={<AnimatedNumber value={cards.total_products} />}
+                icon={Boxes}
+                hint={`${number(cards.total_units)} units on hand`}
+                style={{ animationDelay: "120ms" }}
               />
               <StatCard
                 label="Low stock"
-                value={number(cards.low_stock_count)}
+                value={<AnimatedNumber value={cards.low_stock_count} />}
                 icon={TriangleAlert}
                 tone={cards.low_stock_count > 0 ? "warning" : "default"}
                 hint={
@@ -103,13 +96,7 @@ export default function Dashboard() {
                     ? `${number(cards.out_of_stock_count)} out of stock`
                     : "nothing out of stock"
                 }
-              />
-              <StatCard
-                label="Today's sales"
-                value={money(cards.today_revenue)}
-                icon={ShoppingCart}
-                delta={cards.today_vs_yesterday_pct}
-                deltaLabel="vs yesterday"
+                style={{ animationDelay: "180ms" }}
               />
             </>
           )}
@@ -117,11 +104,7 @@ export default function Dashboard() {
       )}
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-        <TrendCard
-          days={days}
-          onDaysChange={setDays}
-          query={trend}
-        />
+        <TrendCard days={days} onDaysChange={setDays} query={trend} />
         <LowStockPanel
           products={summary.data?.low_stock_products}
           loading={summary.isLoading}
@@ -130,14 +113,293 @@ export default function Dashboard() {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-        <RecentTransactions
-          rows={summary.data?.recent_transactions}
-          loading={summary.isLoading}
-        />
+        <RecentTransactions rows={summary.data?.recent_transactions} loading={summary.isLoading} />
         <div className="space-y-4">
           <TopProducts query={top} />
           {counts && <Footprint counts={counts} monthRevenue={cards.month_revenue} />}
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------- hero */
+
+/**
+ * The page opens with a sentence, not a grid: what happened today and what
+ * needs doing, in words, next to the shape of the whole inventory.
+ */
+function Hero({ user, cards, loading }) {
+  const firstName = user?.name?.split(" ")[0] ?? "there";
+  const needsRestock = cards?.low_stock_count ?? 0;
+
+  return (
+    <Card className="edge-glow relative overflow-hidden">
+      {/* Ambient light: violet from the top-left, a whisper of volt bottom-right. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <div className="absolute -left-24 -top-32 size-[420px] rounded-full bg-primary/[0.13] blur-3xl" />
+        <div className="absolute -bottom-40 right-10 size-[300px] rounded-full bg-volt/[0.12] blur-3xl" />
+        <div className="absolute inset-0 opacity-70 [background-image:radial-gradient(hsl(var(--grid-dot))_1px,transparent_1px)] [background-size:22px_22px] [mask-image:linear-gradient(100deg,transparent_30%,black)]"
+        />
+      </div>
+
+      <div className="relative grid lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+        <div className="flex flex-col justify-between gap-7 p-6 sm:p-8">
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="eyebrow">{formatDate(new Date())}</p>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-success/25 bg-success/10 px-2 py-0.5 text-[10.5px] font-medium text-success">
+                <span className="relative flex size-1.5">
+                  <span className="absolute inline-flex size-full animate-ping-soft rounded-full bg-success" />
+                  <span className="relative inline-flex size-1.5 rounded-full bg-success" />
+                </span>
+                Live
+              </span>
+            </div>
+
+            <h1 className="font-display text-[34px] font-bold leading-[1.02] sm:text-[44px]">
+              {greeting()}, <span className="text-primary">{firstName}</span>.
+            </h1>
+
+            {loading || !cards ? (
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-full max-w-md" />
+                <Skeleton className="h-4 w-2/3 max-w-sm" />
+              </div>
+            ) : (
+              <p className="max-w-xl text-[15px] leading-relaxed text-muted-foreground">
+                {cards.today_invoice_count > 0 ? (
+                  <>
+                    You've sold{" "}
+                    <strong className="num font-semibold text-foreground">
+                      {money(cards.today_revenue)}
+                    </strong>{" "}
+                    across{" "}
+                    <strong className="font-semibold text-foreground">
+                      {number(cards.today_invoice_count)} invoice
+                      {cards.today_invoice_count === 1 ? "" : "s"}
+                    </strong>{" "}
+                    today.{" "}
+                  </>
+                ) : (
+                  <>No sales recorded yet today. </>
+                )}
+                {needsRestock > 0 ? (
+                  <>
+                    <Link
+                      to="/reports?tab=low-stock"
+                      className="font-semibold text-warning underline decoration-warning/40 underline-offset-4 transition-colors hover:decoration-warning"
+                    >
+                      {number(needsRestock)} product{needsRestock === 1 ? "" : "s"}
+                    </Link>{" "}
+                    need{needsRestock === 1 ? "s" : ""} restocking.
+                  </>
+                ) : (
+                  <>Every shelf is above its reorder level.</>
+                )}
+              </p>
+            )}
+          </div>
+
+          {cards && (
+            <dl className="grid max-w-xl grid-cols-3 divide-x divide-border/70 rounded-xl border border-border/70 bg-card/60 backdrop-blur-sm">
+              {[
+                ["Units today", number(cards.today_units)],
+                ["This month", moneyCompact(cards.month_revenue)],
+                ["Month units", number(cards.month_units)],
+              ].map(([label, value]) => (
+                <div key={label} className="px-4 py-3">
+                  <dt className="truncate text-[11.5px] text-muted-foreground">{label}</dt>
+                  <dd className="num mt-1 text-[17px] font-semibold tracking-[-0.02em]">{value}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="volt" asChild>
+              <Link to="/sales?new=1">
+                <Plus />
+                New sale
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link to="/purchases?new=1">
+                <ArrowDownLeft />
+                Stock in
+              </Link>
+            </Button>
+            <Button variant="ghost" asChild>
+              <Link to="/products?new=1">
+                <PackagePlus />
+                Add product
+              </Link>
+            </Button>
+            <p className="ml-auto hidden items-center gap-1.5 text-[12px] text-muted-foreground xl:flex">
+              Press
+              <kbd className="num rounded-md border border-border bg-card px-1.5 py-0.5 text-[10.5px] shadow-soft">
+                /
+              </kbd>
+              to search anything
+            </p>
+          </div>
+        </div>
+
+        <div className="border-t border-border/70 p-6 sm:p-8 lg:border-l lg:border-t-0">
+          <InventoryHealth cards={cards} loading={loading} />
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function InventoryHealth({ cards, loading }) {
+  if (loading || !cards) {
+    return (
+      <div className="flex items-center gap-6">
+        <Skeleton className="size-[148px] shrink-0 rounded-full" />
+        <div className="flex-1 space-y-3">
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} className="h-5" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  const total = cards.total_products;
+  const out = cards.out_of_stock_count;
+  const low = Math.max(cards.low_stock_count - out, 0);
+  const healthy = Math.max(total - low - out, 0);
+  const pct = total ? Math.round((healthy / total) * 100) : 0;
+
+  const segments = [
+    {
+      key: "healthy",
+      label: "Healthy",
+      value: healthy,
+      stroke: "hsl(var(--success))",
+      dot: "bg-success",
+    },
+    {
+      key: "low",
+      label: "Running low",
+      value: low,
+      stroke: "hsl(var(--warning))",
+      dot: "bg-warning",
+    },
+    {
+      key: "out",
+      label: "Out of stock",
+      value: out,
+      stroke: "hsl(var(--destructive))",
+      dot: "bg-destructive",
+    },
+  ];
+
+  return (
+    <div className="flex h-full flex-col justify-between gap-6">
+      <div className="flex items-baseline justify-between">
+        <p className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-muted-foreground">
+          Inventory health
+        </p>
+        <p className="num text-[11.5px] text-muted-foreground">{number(total)} SKUs</p>
+      </div>
+
+      <div className="flex items-center gap-6 sm:gap-8">
+        <HealthRing segments={segments} total={total} pct={pct} />
+        <ul className="min-w-0 flex-1 space-y-3">
+          {segments.map((segment) => (
+            <li key={segment.key} className="flex items-center gap-2.5 text-[13px]">
+              <span className={cn("size-2 shrink-0 rounded-[3px]", segment.dot)} />
+              <span className="min-w-0 flex-1 truncate text-muted-foreground">{segment.label}</span>
+              <span className="num font-semibold">{number(segment.value)}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <dl className="grid grid-cols-2 gap-4 border-t border-border/70 pt-4">
+        <div>
+          <dt className="text-[11.5px] text-muted-foreground">Value at cost</dt>
+          <dd className="num mt-0.5 text-[15px] font-semibold">
+            {moneyCompact(cards.stock_value_at_cost)}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-[11.5px] text-muted-foreground">Potential margin</dt>
+          <dd className="num mt-0.5 text-[15px] font-semibold text-success">
+            {moneyCompact(cards.stock_value_at_retail - cards.stock_value_at_cost)}
+          </dd>
+        </div>
+      </dl>
+    </div>
+  );
+}
+
+/**
+ * Three arcs on one ring — the same healthy / low / out split the badges use,
+ * so the colours already mean something by the time you read the legend.
+ */
+function HealthRing({ segments, total, pct }) {
+  const size = 148;
+  const stroke = 14;
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const gap = total > 0 && segments.filter((s) => s.value > 0).length > 1 ? 6 : 0;
+
+  const visible = segments.filter((segment) => segment.value > 0);
+  const arcs = visible.map((segment, index) => {
+    // Each arc starts where the ones before it end.
+    const before = visible.slice(0, index).reduce((sum, s) => sum + s.value, 0);
+    return {
+      ...segment,
+      length: Math.max((segment.value / total) * c - gap, 2),
+      offset: (before / total) * c,
+    };
+  });
+
+  return (
+    <div className="relative shrink-0" style={{ width: size, height: size }}>
+      <svg
+        viewBox={`0 0 ${size} ${size}`}
+        className="-rotate-90"
+        role="img"
+        aria-label={`${pct}% of products are above their reorder level`}
+      >
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke="hsl(var(--muted))"
+          strokeWidth={stroke}
+        />
+        {arcs.map((arc, index) => (
+          <circle
+            key={arc.key}
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            fill="none"
+            stroke={arc.stroke}
+            strokeWidth={stroke}
+            strokeLinecap="round"
+            strokeDasharray={`${arc.length} ${c}`}
+            strokeDashoffset={-arc.offset}
+            className="animate-ring-draw"
+            style={{ "--ring-circumference": c, animationDelay: `${index * 120}ms` }}
+          />
+        ))}
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="font-display text-[34px] font-bold leading-none">
+          <AnimatedNumber value={pct} format={(v) => Math.round(v)} />
+          <span className="text-[18px] text-muted-foreground">%</span>
+        </span>
+        <span className="mt-1 font-mono text-[9.5px] uppercase tracking-[0.14em] text-muted-foreground">
+          healthy
+        </span>
       </div>
     </div>
   );
@@ -337,9 +599,7 @@ function RecentTransactions({ rows, loading }) {
                     </span>
                   </TableCell>
                   <TableCell align="right">
-                    <span className="num text-[13px] font-medium">
-                      {money(row.total_amount)}
-                    </span>
+                    <span className="num text-[13px] font-medium">{money(row.total_amount)}</span>
                   </TableCell>
                   <TableCell align="right" className="hidden sm:table-cell">
                     <span
@@ -431,8 +691,11 @@ function TopProducts({ query }) {
                 <div className="mt-1.5 flex items-center gap-2">
                   <div className="h-1 flex-1 overflow-hidden rounded-full bg-muted">
                     <div
-                      className="h-full rounded-full bg-primary"
-                      style={{ width: `${((Number(item.revenue) || 0) / max) * 100}%` }}
+                      className="h-full origin-left animate-bar-grow rounded-full bg-gradient-to-r from-primary/60 to-primary"
+                      style={{
+                        width: `${((Number(item.revenue) || 0) / max) * 100}%`,
+                        animationDelay: `${index * 80}ms`,
+                      }}
                     />
                   </div>
                   <span className="num w-16 shrink-0 text-right text-[11px] text-muted-foreground">
@@ -463,7 +726,10 @@ function Footprint({ counts, monthRevenue }) {
       <CardContent className="pt-5">
         <dl className="divide-y divide-border">
           {rows.map(([label, value]) => (
-            <div key={label} className="flex items-baseline justify-between py-2 first:pt-0 last:pb-0">
+            <div
+              key={label}
+              className="flex items-baseline justify-between py-2 first:pt-0 last:pb-0"
+            >
               <dt className="text-[12.5px] text-muted-foreground">{label}</dt>
               <dd className="num text-[13px] font-medium">{value}</dd>
             </div>

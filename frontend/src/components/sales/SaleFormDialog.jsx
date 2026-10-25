@@ -3,7 +3,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { Field, FormError } from "@/components/Field";
+import { Field } from "@/components/Field";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

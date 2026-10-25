@@ -155,7 +155,7 @@ def _register_blueprints(app: Flask) -> None:
     @app.get("/")
     def index():
         return {
-            "name": "StockFlow API",
+            "name": "StockIt API",
             "version": "1.0.0",
             "docs": "See README.md for the endpoint reference.",
             "health": "/api/health",

@@ -12,17 +12,13 @@ export function PageHeader({ eyebrow, title, description, children, className })
         className,
       )}
     >
-      <div className="min-w-0 space-y-1">
-        {eyebrow && (
-          <p className="text-[11px] font-semibold uppercase tracking-[0.09em] text-primary">
-            {eyebrow}
-          </p>
-        )}
-        <h1 className="truncate text-[22px] font-semibold leading-tight tracking-[-0.02em]">
+      <div className="min-w-0 space-y-1.5">
+        {eyebrow && <p className="eyebrow">{eyebrow}</p>}
+        <h1 className="font-display truncate text-[28px] font-bold leading-[1.1] sm:text-[32px]">
           {title}
         </h1>
         {description && (
-          <p className="max-w-2xl text-[13px] leading-relaxed text-muted-foreground">
+          <p className="max-w-2xl text-[13.5px] leading-relaxed text-muted-foreground">
             {description}
           </p>
         )}
@@ -36,7 +32,7 @@ export function PageHeader({ eyebrow, title, description, children, className })
 export function Metric({ label, value, hint, tone = "default", className }) {
   return (
     <div className={cn("space-y-1", className)}>
-      <dt className="text-[11px] font-semibold uppercase tracking-[0.07em] text-muted-foreground">
+      <dt className="font-mono text-[10.5px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
         {label}
       </dt>
       <dd

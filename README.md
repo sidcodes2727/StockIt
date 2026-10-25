@@ -1,6 +1,20 @@
 # StockIt
 
-StockIt is a full-stack application with a Python (Flask) backend and a Node.js (React/Vite) frontend.
+StockIt is a stock information system for retail stores, warehouses and pharmacies: products, suppliers, purchases (stock in), sales (stock out), low-stock alerts, printable invoices and CSV/PDF reports. It's a full-stack application with a Python (Flask) backend and a React (Vite) frontend.
+
+## Highlights
+
+- **Stock meter** — every quantity is drawn against its own reorder level, so one glance down a column shows what needs restocking.
+- **Dashboard** — today's sales in a sentence, an inventory-health ring (healthy / low / out), animated stat tiles with a 7-day sparkline, and a sales trend that highlights today.
+- **Command palette** — press <kbd>⌘K</kbd> / <kbd>Ctrl K</kbd> (or <kbd>/</kbd>) anywhere to search products, jump to a page, or start a sale or purchase.
+- **Reports** — sales, purchases, inventory valuation and a restock list, each with headline totals and CSV/PDF export.
+- **Light and dark themes** — "Console & Paper": a dark console rail, warm paper or graphite canvas, one violet accent and a volt-lime highlight.
+
+| Shortcut | Action |
+| --- | --- |
+| <kbd>⌘K</kbd> / <kbd>Ctrl K</kbd> | Open or close the command palette |
+| <kbd>/</kbd> | Open the command palette (when not typing in a field) |
+| <kbd>↑</kbd> <kbd>↓</kbd> <kbd>↵</kbd> | Move through and run palette results |
 
 ## Project Structure
 

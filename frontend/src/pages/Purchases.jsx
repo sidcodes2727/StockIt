@@ -3,10 +3,7 @@ import { Link } from "react-router-dom";
 import {
   ArrowDownLeft,
   Building2,
-  MoreHorizontal,
   Plus,
-  Search,
-  ShoppingCart,
   X,
 } from "lucide-react";
 
@@ -17,12 +14,6 @@ import { SearchInput } from "@/components/SearchInput";
 import { PurchaseFormDialog } from "@/components/purchases/PurchaseFormDialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,

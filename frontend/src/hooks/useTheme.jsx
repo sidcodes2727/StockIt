@@ -27,7 +27,7 @@ export function ThemeProvider({ children }) {
       // Keeps the mobile browser chrome in step with the app surface.
       document
         .querySelector('meta[name="theme-color"]')
-        ?.setAttribute("content", dark ? "#0a0f1a" : "#f7f9fb");
+        ?.setAttribute("content", dark ? "#0c0c0e" : "#f9f8f5");
     };
 
     apply();

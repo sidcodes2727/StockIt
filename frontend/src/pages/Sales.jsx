@@ -5,7 +5,6 @@ import {
   MoreHorizontal,
   Plus,
   Receipt,
-  ShoppingCart,
   X,
 } from "lucide-react";
 

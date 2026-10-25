@@ -1,13 +1,13 @@
-import * as React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   Bell,
   ChevronDown,
+  ChevronRight,
+  Command,
   LogOut,
   Menu,
   Monitor,
   Moon,
-  Package,
   Search,
   Settings,
   Sun,
@@ -27,21 +27,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UserAvatar } from "@/components/ui/avatar";
+import { NAV_ITEMS } from "@/components/Sidebar";
 import { StockMeter } from "@/components/StockMeter";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
-import { useLowStockProducts, useProducts } from "@/hooks/queries";
-import { cn, money, number } from "@/lib/utils";
+import { useLowStockProducts } from "@/hooks/queries";
+import { cn, number } from "@/lib/utils";
 
-export function Topbar({ onOpenSidebar }) {
+export function Topbar({ onOpenSidebar, onOpenPalette }) {
   const { user, isAdmin, signOut } = useAuth();
 
   return (
-    <header className="app-topbar sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b border-border bg-background/85 px-3 backdrop-blur-md sm:px-5">
+    <header className="app-topbar sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background/75 px-3 backdrop-blur-xl backdrop-saturate-150 sm:px-6">
       <Button
         variant="ghost"
         size="icon-sm"
@@ -52,9 +52,10 @@ export function Topbar({ onOpenSidebar }) {
         <Menu />
       </Button>
 
-      <QuickSearch />
+      <Breadcrumb />
+      <PaletteTrigger onOpen={onOpenPalette} />
 
-      <div className="ml-auto flex items-center gap-1">
+      <div className="ml-auto flex items-center gap-1 md:ml-0">
         <LowStockBell />
         <ThemeToggle />
 
@@ -113,137 +114,48 @@ export function Topbar({ onOpenSidebar }) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Quick search — resolves to products, the only thing worth searching by name */
+/* Where am I — section / page, read from the same table the sidebar uses      */
 /* -------------------------------------------------------------------------- */
-function QuickSearch() {
-  const navigate = useNavigate();
-  const [term, setTerm] = React.useState("");
-  const [open, setOpen] = React.useState(false);
-  const [debounced, setDebounced] = React.useState("");
-  const inputRef = React.useRef(null);
-
-  React.useEffect(() => {
-    const timer = setTimeout(() => setDebounced(term.trim()), 250);
-    return () => clearTimeout(timer);
-  }, [term]);
-
-  // Ctrl/Cmd-K focuses search from anywhere.
-  React.useEffect(() => {
-    const handler = (event) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
-        event.preventDefault();
-        inputRef.current?.focus();
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, []);
-
-  const enabled = debounced.length >= 2;
-  const { data, isFetching } = useProducts(
-    { search: debounced, per_page: 6, sort_by: "name" },
-    { enabled },
-  );
-  const results = enabled ? (data?.items ?? []) : [];
-
-  const goToResults = () => {
-    if (!debounced) return;
-    setOpen(false);
-    navigate(`/products?search=${encodeURIComponent(debounced)}`);
-  };
+function Breadcrumb() {
+  const { pathname } = useLocation();
+  const match =
+    NAV_ITEMS.find((item) => (item.end ? pathname === item.to : pathname.startsWith(item.to))) ??
+    null;
 
   return (
-    <Popover open={open && enabled} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <div className="relative w-full max-w-sm">
-          <Search
-            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-            aria-hidden="true"
-          />
-          <Input
-            ref={inputRef}
-            value={term}
-            onChange={(event) => {
-              setTerm(event.target.value);
-              setOpen(true);
-            }}
-            onFocus={() => setOpen(true)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") goToResults();
-              if (event.key === "Escape") setOpen(false);
-            }}
-            placeholder="Search products, SKUs…"
-            aria-label="Search products"
-            className="h-9 border-transparent bg-secondary pl-9 pr-14 shadow-none focus-visible:border-input focus-visible:bg-card"
-          />
-          <kbd className="num pointer-events-none absolute right-2.5 top-1/2 hidden -translate-y-1/2 rounded border border-border bg-card px-1.5 py-0.5 text-[10px] text-muted-foreground sm:block">
-            ⌘K
-          </kbd>
-        </div>
-      </PopoverTrigger>
+    <div className="hidden min-w-0 items-center gap-2 text-[13px] md:flex">
+      <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted-foreground">
+        {match?.section ?? "Overview"}
+      </span>
+      <ChevronRight className="size-3.5 text-muted-foreground/60" aria-hidden="true" />
+      <span className="truncate font-medium">{match?.label ?? "Not found"}</span>
+    </div>
+  );
+}
 
-      <PopoverContent
-        align="start"
-        className="w-[min(28rem,calc(100vw-2rem))] p-0"
-        onOpenAutoFocus={(event) => event.preventDefault()}
-      >
-        {isFetching && !results.length ? (
-          <div className="space-y-2 p-3">
-            {[0, 1, 2].map((i) => (
-              <Skeleton key={i} className="h-9" />
-            ))}
-          </div>
-        ) : results.length ? (
-          <>
-            <ul className="max-h-80 overflow-y-auto p-1.5">
-              {results.map((product) => (
-                <li key={product.id}>
-                  <Link
-                    to={`/products?search=${encodeURIComponent(product.sku)}`}
-                    onClick={() => setOpen(false)}
-                    className="flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    <span className="flex size-7 shrink-0 items-center justify-center rounded border border-border bg-muted/60 text-muted-foreground">
-                      <Package className="size-3.5" aria-hidden="true" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[13px] font-medium">
-                        {product.name}
-                      </span>
-                      <span className="num block text-[11px] text-muted-foreground">
-                        {product.sku} · {money(product.unit_price)}
-                      </span>
-                    </span>
-                    <span className="w-16 shrink-0 text-right">
-                      <span className="num block text-[12px] font-medium">
-                        {number(product.quantity)}
-                      </span>
-                      <StockMeter
-                        className="mt-1"
-                        quantity={product.quantity}
-                        reorderLevel={product.reorder_level}
-                        status={product.stock_status}
-                      />
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            <button
-              type="button"
-              onClick={goToResults}
-              className="w-full border-t border-border px-3 py-2 text-left text-[12.5px] text-primary transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-            >
-              See all results for “{debounced}”
-            </button>
-          </>
-        ) : (
-          <p className="px-3 py-6 text-center text-[13px] text-muted-foreground">
-            No products match “{debounced}”.
-          </p>
-        )}
-      </PopoverContent>
-    </Popover>
+/* -------------------------------------------------------------------------- */
+/* Command palette trigger — looks like search, does everything                */
+/* -------------------------------------------------------------------------- */
+function PaletteTrigger({ onOpen }) {
+  const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className={cn(
+        "group flex h-9 w-full max-w-[340px] items-center gap-2.5 rounded-lg border border-border bg-card/70 pl-3 pr-1.5 text-left text-[13px] text-muted-foreground shadow-soft transition-all",
+        "hover:border-foreground/20 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "md:ml-auto",
+      )}
+      aria-label="Open command palette"
+    >
+      <Search className="size-4 shrink-0" aria-hidden="true" />
+      <span className="flex-1 truncate">Search or jump to…</span>
+      <kbd className="num hidden items-center gap-0.5 rounded-md border border-border bg-muted px-1.5 py-0.5 text-[10.5px] sm:flex">
+        <Command className="size-2.5" aria-hidden="true" hidden={!isMac} />
+        {isMac ? "K" : "Ctrl K"}
+      </kbd>
+    </button>
   );
 }
 
@@ -273,8 +185,10 @@ function LowStockBell() {
             // merely low — the same two states the badges use.
             <span
               className={cn(
-                "absolute -right-0.5 -top-0.5 flex min-w-[15px] items-center justify-center rounded-full px-[3px] text-[9.5px] font-bold leading-[15px] text-white ring-2 ring-background",
-                outOfStock > 0 ? "bg-destructive" : "bg-warning",
+                "absolute -right-0.5 -top-0.5 flex min-w-[15px] items-center justify-center rounded-full px-[3px] text-[9.5px] font-bold leading-[15px] ring-2 ring-background",
+                outOfStock > 0
+                  ? "bg-destructive text-destructive-foreground"
+                  : "bg-warning text-warning-foreground",
               )}
             >
               {count > 9 ? "9+" : count}

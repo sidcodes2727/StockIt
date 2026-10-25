@@ -35,48 +35,51 @@ def summary():
     yesterday = today - timedelta(days=1)
 
     # -- summary cards -------------------------------------------------------
+    # The database is usually a hosted Postgres a region away, so each round
+    # trip costs more than the query itself. Aggregates that scan the same
+    # table share one statement via FILTER clauses.
     product_totals = db.session.execute(
         select(
             func.count(Product.id),
             func.coalesce(func.sum(Product.cost_price * Product.quantity), 0),
             func.coalesce(func.sum(Product.unit_price * Product.quantity), 0),
             func.coalesce(func.sum(Product.quantity), 0),
+            func.count(Product.id).filter(NEEDS_REORDER),
+            func.count(Product.id).filter(Product.quantity <= 0),
         )
     ).one()
-
-    low_stock_count = db.session.scalar(
-        select(func.count(Product.id)).where(NEEDS_REORDER)
-    )
-    out_of_stock_count = db.session.scalar(
-        select(func.count(Product.id)).where(Product.quantity <= 0)
-    )
-
-    today_sales = db.session.execute(
-        select(
-            func.coalesce(func.sum(Sale.quantity * Sale.sale_price), 0),
-            func.coalesce(func.sum(Sale.quantity), 0),
-            func.count(func.distinct(Sale.invoice_no)),
-        ).where(Sale.sale_date == today)
-    ).one()
-
-    yesterday_revenue = db.session.scalar(
-        select(func.coalesce(func.sum(Sale.quantity * Sale.sale_price), 0)).where(
-            Sale.sale_date == yesterday
-        )
-    )
+    low_stock_count = product_totals[4]
+    out_of_stock_count = product_totals[5]
 
     month_start = today.replace(day=1)
-    month_totals = db.session.execute(
+    revenue = Sale.quantity * Sale.sale_price
+    is_today = Sale.sale_date == today
+    in_month = Sale.sale_date >= month_start
+    sales_totals = db.session.execute(
         select(
-            func.coalesce(func.sum(Sale.quantity * Sale.sale_price), 0),
-            func.coalesce(func.sum(Sale.quantity), 0),
-        ).where(Sale.sale_date >= month_start, Sale.sale_date <= today)
+            func.coalesce(func.sum(revenue).filter(is_today), 0),
+            func.coalesce(func.sum(Sale.quantity).filter(is_today), 0),
+            func.count(func.distinct(Sale.invoice_no)).filter(is_today),
+            func.coalesce(func.sum(revenue).filter(Sale.sale_date == yesterday), 0),
+            func.coalesce(func.sum(revenue).filter(in_month), 0),
+            func.coalesce(func.sum(Sale.quantity).filter(in_month), 0),
+        ).where(Sale.sale_date >= min(month_start, yesterday), Sale.sale_date <= today)
     ).one()
+    today_sales = sales_totals[0:3]
+    yesterday_revenue = sales_totals[3]
+    month_totals = sales_totals[4:6]
 
+    count_row = db.session.execute(
+        select(
+            select(func.count(Category.id)).scalar_subquery(),
+            select(func.count(Supplier.id)).scalar_subquery(),
+            select(func.count(User.id)).scalar_subquery(),
+        )
+    ).one()
     counts = {
-        "categories": db.session.scalar(select(func.count(Category.id))) or 0,
-        "suppliers": db.session.scalar(select(func.count(Supplier.id))) or 0,
-        "users": db.session.scalar(select(func.count(User.id))) or 0,
+        "categories": count_row[0] or 0,
+        "suppliers": count_row[1] or 0,
+        "users": count_row[2] or 0,
     }
 
     # -- low stock alerts panel ---------------------------------------------
@@ -181,23 +184,19 @@ def sales_trend():
     end = date.today()
     start = end - timedelta(days=days - 1)
 
-    sales_rows = dict(
-        db.session.execute(
-            select(
-                Sale.sale_date,
-                func.coalesce(func.sum(Sale.quantity * Sale.sale_price), 0),
-            )
-            .where(Sale.sale_date >= start, Sale.sale_date <= end)
-            .group_by(Sale.sale_date)
-        ).all()
-    )
-    units_rows = dict(
-        db.session.execute(
-            select(Sale.sale_date, func.coalesce(func.sum(Sale.quantity), 0))
-            .where(Sale.sale_date >= start, Sale.sale_date <= end)
-            .group_by(Sale.sale_date)
-        ).all()
-    )
+    sales_rows = {}
+    units_rows = {}
+    for day, day_revenue, day_units in db.session.execute(
+        select(
+            Sale.sale_date,
+            func.coalesce(func.sum(Sale.quantity * Sale.sale_price), 0),
+            func.coalesce(func.sum(Sale.quantity), 0),
+        )
+        .where(Sale.sale_date >= start, Sale.sale_date <= end)
+        .group_by(Sale.sale_date)
+    ).all():
+        sales_rows[day] = day_revenue
+        units_rows[day] = day_units
     purchase_rows = dict(
         db.session.execute(
             select(

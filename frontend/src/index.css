@@ -3,114 +3,138 @@
 @tailwind utilities;
 
 /* ==========================================================================
-   StockFlow design tokens
+   StockIt design tokens — "Console & Paper"
 
-   A near-monochrome cool-slate ramp with a single cobalt accent. The accent is
-   spent only on primary actions, the active nav item and the focused chart
-   series — everything else is neutral ink and hairlines.
+   Warm paper (light) or graphite (dark) canvas, a console rail that stays dark
+   in both themes, one electric-violet accent for actions and focus, and a
+   "volt" lime reserved for signature moments: the brand mark, the active nav
+   item and today's bar on the trend chart. Volt is decorative and never
+   carries meaning on its own — stock state keeps its own reserved trio.
 
-   The four data/status colours in each mode were computed and validated with
-   the dataviz palette validator (lightness band, chroma floor, CVD separation,
-   normal-vision floor, contrast vs surface), not eyeballed:
-
-     light  primary #2049CE · success #0E8F6F · warning #D97706 · danger #9F1239
-     dark   primary #5B77EE · success #12A57E · warning #C87A08 · danger #E23A72
-
-   Dark mode is a separate selection from the same ramps validated against the
-   dark surface — not an automatic inversion of the light steps.
+   Dark mode is a separate selection validated against the dark surface, not
+   an automatic inversion of the light steps.
    ========================================================================== */
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 222 45% 11%;
+    --background: 40 23% 97%; /* #f9f8f5 paper */
+    --foreground: 240 14% 8%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 45% 11%;
+    --card-foreground: 240 14% 8%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 45% 11%;
+    --popover-foreground: 240 14% 8%;
 
-    --primary: 226 73% 47%; /* #2049CE */
+    --primary: 250 84% 58%; /* #5b3ff0 */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 20% 96%;
-    --secondary-foreground: 222 40% 18%;
+    --secondary: 40 14% 94%;
+    --secondary-foreground: 240 12% 14%;
 
-    --muted: 210 20% 96%;
-    --muted-foreground: 215 16% 44%;
+    --muted: 40 14% 94%;
+    --muted-foreground: 240 6% 40%;
 
-    --accent: 226 60% 96%;
-    --accent-foreground: 226 73% 38%;
+    --accent: 250 90% 96%;
+    --accent-foreground: 250 70% 44%;
 
-    --success: 165 82% 31%; /* #0E8F6F */
+    --volt: 76 100% 59%; /* #c8ff2e */
+    --volt-foreground: 240 14% 8%;
+
+    --success: 160 84% 26%; /* #0b7a54 */
     --success-foreground: 0 0% 100%;
 
-    --warning: 32 95% 44%; /* #D97706 */
+    --warning: 28 90% 37%; /* #b45909 */
     --warning-foreground: 0 0% 100%;
 
-    --destructive: 343 80% 35%; /* #9F1239 */
+    --destructive: 350 76% 46%; /* #cf1c3d */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 24% 91%;
-    --input: 214 22% 86%;
-    --ring: 226 73% 47%;
+    --border: 40 12% 88%;
+    --input: 40 9% 82%;
+    --ring: 250 84% 58%;
 
-    --shadow-tint: 222 45% 25%;
-    --radius: 0.5rem;
+    --sidebar: 0 0% 100%;
+    --sidebar-foreground: 240 14% 8%;
+    --sidebar-muted: 240 6% 40%;
+    --sidebar-border: 40 12% 88%;
+    --sidebar-accent: 250 90% 96%;
+    --sidebar-hover: 40 14% 95%;
 
-    /* Chart surface + series. Sales trend is deliberately single-series. */
+    --shadow-tint: 240 30% 12%;
+    --radius: 0.625rem;
+
+    /* Chart surface + series. Sales trend is deliberately single-series; the
+       highlight marks "today" and is ink on paper, volt on graphite. */
     --chart-surface: 0 0% 100%;
-    --chart-1: 226 73% 47%;
-    --chart-2: 165 82% 31%;
-    --chart-3: 32 95% 44%;
-    --chart-4: 343 80% 35%;
-    --chart-grid: 214 24% 91%;
+    --chart-1: 250 84% 58%;
+    --chart-2: 160 84% 26%;
+    --chart-3: 28 90% 37%;
+    --chart-4: 350 76% 46%;
+    --chart-highlight: 240 14% 8%;
+    --chart-grid: 40 12% 88%;
+
+    --grid-dot: 240 14% 8% / 0.07;
+    --glow: 250 84% 58% / 0.12;
   }
 
   .dark {
-    --background: 221 44% 7%; /* #0a0f1a */
-    --foreground: 210 28% 94%;
+    --background: 240 8% 5%; /* #0c0c0e graphite */
+    --foreground: 40 12% 94%;
 
-    --card: 219 42% 11%; /* #101827 — the validated dark chart surface */
-    --card-foreground: 210 28% 94%;
+    --card: 240 6% 8%; /* #131316 */
+    --card-foreground: 40 12% 94%;
 
-    --popover: 219 40% 13%;
-    --popover-foreground: 210 28% 94%;
+    --popover: 240 6% 10%;
+    --popover-foreground: 40 12% 94%;
 
-    --primary: 229 81% 65%; /* #5B77EE */
-    --primary-foreground: 226 60% 10%;
+    --primary: 250 100% 74%; /* #9a7bff */
+    --primary-foreground: 250 60% 9%;
 
-    --secondary: 218 28% 16%;
-    --secondary-foreground: 210 24% 90%;
+    --secondary: 240 5% 13%;
+    --secondary-foreground: 40 10% 90%;
 
-    --muted: 218 28% 16%;
-    --muted-foreground: 215 18% 64%;
+    --muted: 240 5% 13%;
+    --muted-foreground: 240 5% 63%;
 
-    --accent: 224 40% 20%;
-    --accent-foreground: 229 81% 78%;
+    --accent: 250 35% 17%;
+    --accent-foreground: 250 100% 84%;
 
-    --success: 164 80% 36%; /* #12A57E */
-    --success-foreground: 165 90% 8%;
+    --volt: 76 100% 59%;
+    --volt-foreground: 240 14% 8%;
 
-    --warning: 36 92% 41%; /* #C87A08 */
+    --success: 158 64% 45%; /* #29bc84 */
+    --success-foreground: 158 80% 7%;
+
+    --warning: 36 92% 52%; /* #f5a01d */
     --warning-foreground: 36 95% 8%;
 
-    --destructive: 340 74% 56%; /* #E23A72 */
-    --destructive-foreground: 340 90% 10%;
+    --destructive: 350 88% 64%; /* #f5577a */
+    --destructive-foreground: 350 90% 10%;
 
-    --border: 217 24% 20%;
-    --input: 217 22% 24%;
-    --ring: 229 81% 65%;
+    --border: 240 5% 15%;
+    --input: 240 5% 20%;
+    --ring: 250 100% 74%;
 
-    --shadow-tint: 221 60% 2%;
+    --sidebar: 240 9% 4%;
+    --sidebar-foreground: 40 15% 93%;
+    --sidebar-muted: 240 5% 56%;
+    --sidebar-border: 240 6% 11%;
+    --sidebar-accent: 240 6% 14%;
+    --sidebar-hover: 240 6% 9%;
 
-    --chart-surface: 219 42% 11%;
-    --chart-1: 229 81% 65%;
-    --chart-2: 164 80% 36%;
-    --chart-3: 36 92% 41%;
-    --chart-4: 340 74% 56%;
-    --chart-grid: 217 24% 20%;
+    --shadow-tint: 240 40% 1%;
+
+    --chart-surface: 240 6% 8%;
+    --chart-1: 250 100% 74%;
+    --chart-2: 158 64% 45%;
+    --chart-3: 36 92% 52%;
+    --chart-4: 350 88% 64%;
+    --chart-highlight: 76 100% 59%;
+    --chart-grid: 240 5% 15%;
+
+    --grid-dot: 40 12% 94% / 0.055;
+    --glow: 250 100% 74% / 0.1;
   }
 
   * {
@@ -123,8 +147,13 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-feature-settings: "cv11" 1;
+    font-feature-settings: "ss01" 1, "cv11" 1;
     text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2 {
+    text-wrap: balance;
   }
 
   /* Every numeral in the app is monospaced and tabular, so quantities, money
@@ -185,7 +214,64 @@
   }
 
   .card-surface {
-    @apply rounded-lg border border-border bg-card;
+    @apply rounded-xl border border-border bg-card;
+  }
+
+  /* Headlines use the display face; tight tracking keeps them compact. */
+  .font-display {
+    font-optical-sizing: auto;
+    letter-spacing: -0.035em;
+  }
+
+  /* The canvas: a quiet dot grid that fades out toward the bottom, plus a
+     soft accent glow at the top — graph paper under a desk lamp. */
+  .canvas {
+    background-color: hsl(var(--background));
+    background-image:
+      radial-gradient(ellipse 80% 340px at 50% -80px, hsl(var(--glow)), transparent 70%),
+      radial-gradient(hsl(var(--grid-dot)) 1px, transparent 1px);
+    background-size: 100% 100%, 22px 22px;
+    background-position: 0 0, -11px -11px;
+    background-attachment: local, local;
+  }
+
+  /* The console rail gets a faint vertical scanline sheen. */
+  .console {
+    background-color: hsl(var(--sidebar));
+  }
+
+  /* Eyebrow labels — mono, tracked, prefixed with a volt square. */
+  .eyebrow {
+    @apply inline-flex items-center gap-2 font-mono text-[10.5px] font-medium uppercase tracking-[0.14em] text-muted-foreground;
+  }
+  .eyebrow::before {
+    content: "";
+    @apply size-1.5 rounded-[2px] bg-primary;
+  }
+
+  /* A hairline that glows along the top edge of highlighted cards. */
+  .edge-glow {
+    position: relative;
+  }
+  .edge-glow::before {
+    content: "";
+    position: absolute;
+    inset: -1px -1px auto -1px;
+    height: 1px;
+    border-radius: inherit;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--primary) / 0.7) 30%,
+      hsl(var(--volt) / 0.8) 70%,
+      transparent
+    );
+    pointer-events: none;
+  }
+
+  /* Interactive cards lift a little on hover. */
+  .lift {
+    @apply transition-[transform,box-shadow,border-color] duration-200 ease-out hover:-translate-y-0.5 hover:border-foreground/15 hover:shadow-raised;
   }
 
   /* Recharts injects its own focus outline on the wrapper; we don't want it. */

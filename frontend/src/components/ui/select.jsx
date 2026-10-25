@@ -12,7 +12,7 @@ const SelectTrigger = React.forwardRef(({ className, children, size = "default",
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex w-full items-center justify-between gap-2 rounded-md border border-input bg-card px-3 text-sm shadow-soft transition-colors",
+      "flex w-full items-center justify-between gap-2 rounded-lg border border-input bg-card px-3 text-sm shadow-soft transition-colors",
       "data-[placeholder]:text-muted-foreground/70",
       "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
       "disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-60",
@@ -38,7 +38,7 @@ const SelectContent = React.forwardRef(
         ref={ref}
         position={position}
         className={cn(
-          "relative z-50 max-h-[--radix-select-content-available-height] min-w-[8rem] overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-overlay",
+          "relative z-50 max-h-[--radix-select-content-available-height] min-w-[8rem] overflow-hidden rounded-xl border border-border bg-popover text-popover-foreground shadow-overlay",
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
           "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
           "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",

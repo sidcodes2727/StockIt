@@ -21,12 +21,16 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center gap-3 px-6 py-16 text-center",
+        "isolate flex flex-col items-center justify-center gap-3 px-6 py-16 text-center",
         className,
       )}
     >
-      <div className="flex size-10 items-center justify-center rounded-lg border border-border bg-muted/60 text-muted-foreground">
-        <Icon className="size-[18px]" aria-hidden="true" />
+      <div className="relative flex size-12 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground shadow-raised">
+        <span
+          aria-hidden="true"
+          className="absolute inset-0 -z-10 translate-x-1.5 translate-y-1.5 rounded-xl border border-dashed border-border"
+        />
+        <Icon className="size-5" aria-hidden="true" />
       </div>
       <div className="space-y-1">
         <p className="text-[14px] font-medium">{title}</p>
@@ -51,12 +55,12 @@ export function ErrorState({ error, onRetry, className }) {
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center gap-3 px-6 py-16 text-center",
+        "isolate flex flex-col items-center justify-center gap-3 px-6 py-16 text-center",
         className,
       )}
     >
-      <div className="flex size-10 items-center justify-center rounded-lg border border-destructive/25 bg-destructive/10 text-destructive">
-        <SearchX className="size-[18px]" aria-hidden="true" />
+      <div className="flex size-12 items-center justify-center rounded-xl border border-destructive/25 bg-destructive/10 text-destructive">
+        <SearchX className="size-5" aria-hidden="true" />
       </div>
       <div className="space-y-1">
         <p className="text-[14px] font-medium">Couldn't load this</p>

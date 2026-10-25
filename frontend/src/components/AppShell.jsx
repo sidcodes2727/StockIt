@@ -1,8 +1,10 @@
 import * as React from "react";
 import { Outlet, useLocation } from "react-router-dom";
 
+import { CommandPalette } from "@/components/CommandPalette";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { BrandMark, SidebarNav } from "@/components/Sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { SidebarHealth, SidebarNav, SidebarUser, Wordmark } from "@/components/Sidebar";
 import { Topbar } from "@/components/Topbar";
 import { useAuth } from "@/hooks/useAuth";
 import { useLowStockProducts } from "@/hooks/queries";
@@ -11,6 +13,7 @@ export function AppShell() {
   const { isAdmin } = useAuth();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [paletteOpen, setPaletteOpen] = React.useState(false);
   const { data } = useLowStockProducts();
   const lowStockCount = data?.items?.length ?? 0;
 
@@ -21,13 +24,22 @@ export function AppShell() {
     document.getElementById("main-scroll")?.scrollTo({ top: 0 });
   }, [location.pathname]);
 
+  const rail = (onNavigate) => (
+    <>
+      <div className="flex h-14 shrink-0 items-center border-b border-sidebar-border px-4">
+        <Wordmark />
+      </div>
+      <SidebarNav isAdmin={isAdmin} lowStockCount={lowStockCount} onNavigate={onNavigate} />
+      <SidebarHealth />
+      <SidebarUser />
+    </>
+  );
+
   return (
     <div className="flex h-dvh overflow-hidden bg-background">
-      {/* Persistent on desktop. */}
-      <aside className="hidden w-[232px] shrink-0 flex-col border-r border-border bg-card lg:flex">
-        <Brand />
-        <SidebarNav isAdmin={isAdmin} lowStockCount={lowStockCount} />
-        <Footprint />
+      {/* The navigation rail follows the theme. Persistent on desktop. */}
+      <aside className="console hidden w-[244px] shrink-0 flex-col border-r border-sidebar-border text-sidebar-foreground lg:flex">
+        {rail()}
       </aside>
 
       {/* Drawer on tablet and phone — warehouse staff work on both. */}
@@ -35,24 +47,28 @@ export function AppShell() {
         <DialogContent
           side="right"
           size="sm"
-          className="left-0 right-auto max-w-[264px] p-0 data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left lg:hidden"
+          className="console left-0 right-auto max-w-[268px] border-sidebar-border p-0 text-sidebar-foreground data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left lg:hidden"
         >
           <DialogTitle className="sr-only">Navigation</DialogTitle>
-          <Brand />
-          <SidebarNav
-            isAdmin={isAdmin}
-            lowStockCount={lowStockCount}
-            onNavigate={() => setMobileOpen(false)}
-          />
-          <Footprint />
+          {rail(() => setMobileOpen(false))}
         </DialogContent>
       </Dialog>
 
+      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
+
       <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar onOpenSidebar={() => setMobileOpen(true)} />
-        <main id="main-scroll" className="min-h-0 flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-6 sm:py-8">
-            <Outlet />
+        <Topbar
+          onOpenSidebar={() => setMobileOpen(true)}
+          onOpenPalette={() => setPaletteOpen(true)}
+        />
+        <main id="main-scroll" className="canvas min-h-0 flex-1 overflow-y-auto">
+          <div
+            key={location.pathname}
+            className="mx-auto w-full max-w-[1440px] animate-page-in px-4 py-6 sm:px-6 sm:py-8 lg:px-8"
+          >
+            <React.Suspense fallback={<PageFallback />}>
+              <Outlet />
+            </React.Suspense>
           </div>
         </main>
       </div>
@@ -60,30 +76,15 @@ export function AppShell() {
   );
 }
 
-function Brand() {
+/** Shown for the split second a lazily loaded page's code is in flight. */
+function PageFallback() {
   return (
-    <div className="flex h-14 shrink-0 items-center gap-2.5 border-b border-border px-4">
-      <BrandMark />
-      <span className="min-w-0">
-        <span className="block text-[14px] font-semibold leading-tight tracking-[-0.01em]">
-          StockFlow
-        </span>
-        <span className="block text-[10.5px] uppercase tracking-[0.09em] text-muted-foreground">
-          Stock control
-        </span>
-      </span>
-    </div>
-  );
-}
-
-function Footprint() {
-  const { user } = useAuth();
-  return (
-    <div className="shrink-0 border-t border-border px-4 py-3">
-      <p className="text-[11px] text-muted-foreground">
-        Signed in as <span className="font-medium text-foreground">{user?.name}</span>
-      </p>
-      <p className="text-[11px] capitalize text-muted-foreground">{user?.role} access</p>
+    <div className="space-y-6" aria-busy="true" aria-label="Loading page">
+      <div className="space-y-2">
+        <Skeleton className="h-3 w-24" />
+        <Skeleton className="h-8 w-64" />
+      </div>
+      <Skeleton className="h-[420px] w-full rounded-xl" />
     </div>
   );
 }

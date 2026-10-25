@@ -37,9 +37,14 @@ export function AdminRoute() {
 
 function Splash() {
   return (
-    <div className="flex h-dvh flex-col items-center justify-center gap-3">
-      <BrandMark className="animate-pulse" />
-      <p className="text-[13px] text-muted-foreground">Restoring your session…</p>
+    <div className="canvas flex h-dvh flex-col items-center justify-center gap-5">
+      <BrandMark className="size-11 animate-pulse rounded-xl [&_svg]:size-6" />
+      <div className="h-1 w-40 overflow-hidden rounded-full bg-muted">
+        <div className="h-full w-1/3 animate-indeterminate rounded-full bg-primary" />
+      </div>
+      <p className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted-foreground">
+        Restoring your session
+      </p>
     </div>
   );
 }
@@ -47,11 +52,11 @@ function Splash() {
 function NoAccess() {
   return (
     <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
-      <div className="flex size-11 items-center justify-center rounded-lg border border-border bg-muted/60 text-muted-foreground">
+      <div className="flex size-12 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground shadow-raised">
         <ShieldOff className="size-5" aria-hidden="true" />
       </div>
       <div className="space-y-1">
-        <h1 className="text-[17px] font-semibold">Admins only</h1>
+        <h1 className="font-display text-[24px] font-bold">Admins only</h1>
         <p className="max-w-sm text-[13px] leading-relaxed text-muted-foreground">
           User management is restricted to administrator accounts. Ask an admin if you
           need access.
