@@ -108,7 +108,7 @@ export function SaleFormDialog({ open, onOpenChange }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent size="xl" className="max-h-[90vh] overflow-y-auto sm:!max-w-5xl">
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
             <DialogTitle>Record Sale</DialogTitle>
@@ -117,7 +117,7 @@ export function SaleFormDialog({ open, onOpenChange }) {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-6 py-6">
+          <div className="grid gap-6 px-6 py-6">
             <div className="grid grid-cols-2 gap-4">
               <Field label="Customer Name" htmlFor="customer_name" error={errors.customer_name?.message}>
                 <Input
