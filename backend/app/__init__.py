@@ -6,6 +6,7 @@ from typing import Optional
 import logging
 
 from flask import Flask, jsonify
+from flask_swagger_ui import get_swaggerui_blueprint
 
 from config import Config, get_config
 
@@ -117,6 +118,7 @@ def _register_blueprints(app: Flask) -> None:
     from .routes.sales import sales_bp
     from .routes.suppliers import suppliers_bp
     from .routes.users import users_bp
+    from .openapi import build_openapi_spec
 
     for blueprint in (
         auth_bp,
@@ -160,6 +162,17 @@ def _register_blueprints(app: Flask) -> None:
             "docs": "See README.md for the endpoint reference.",
             "health": "/api/health",
         }
+
+    @app.get("/api/openapi.json")
+    def openapi_spec():
+        return build_openapi_spec(app)
+
+    swagger_blueprint = get_swaggerui_blueprint(
+        "/api/docs",
+        "/api/openapi.json",
+        config={"app_name": "StockIt API"},
+    )
+    app.register_blueprint(swagger_blueprint, url_prefix="/api/docs")
 
 
 def _register_shell_context(app: Flask) -> None:
