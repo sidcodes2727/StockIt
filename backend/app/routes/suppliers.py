@@ -139,7 +139,7 @@ def supplier_purchases(supplier_id: int):
 
 
 @suppliers_bp.post("")
-@auth_required
+@role_required(UserRole.ADMIN)
 def create_supplier():
     payload = _clean(SupplierWriteSchema().load(request.get_json(silent=True) or {}))
 

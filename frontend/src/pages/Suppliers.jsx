@@ -39,6 +39,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useDeleteSupplier, useSuppliers } from "@/hooks/queries";
+import { useAuth } from "@/hooks/useAuth";
 import { useTableParams } from "@/hooks/useTableParams";
 import { number } from "@/lib/utils";
 
@@ -51,6 +52,7 @@ const DEFAULTS = {
 };
 
 export default function Suppliers() {
+  const { isAdmin } = useAuth();
   const { params, setParams, reset, isFiltered } = useTableParams(DEFAULTS);
   const [formOpen, setFormOpen] = React.useState(false);
   const [editing, setEditing] = React.useState(null);
@@ -80,16 +82,18 @@ export default function Suppliers() {
         title="Suppliers"
         description="Who you buy from. Open a supplier to see the products they provide and everything you've received from them."
       >
-        <Button
-          size="sm"
-          onClick={() => {
-            setEditing(null);
-            setFormOpen(true);
-          }}
-        >
-          <UserPlus />
-          Add supplier
-        </Button>
+        {isAdmin && (
+          <Button
+            size="sm"
+            onClick={() => {
+              setEditing(null);
+              setFormOpen(true);
+            }}
+          >
+            <UserPlus />
+            Add supplier
+          </Button>
+        )}
       </PageHeader>
 
       <Card>
@@ -130,11 +134,8 @@ export default function Suppliers() {
               icon={Truck}
               title="No suppliers yet"
               description="Add the businesses you buy stock from — purchases can then be attributed to them."
-              actionLabel="Add supplier"
-              onAction={() => {
-                setEditing(null);
-                setFormOpen(true);
-              }}
+              actionLabel={isAdmin ? "Add supplier" : undefined}
+              onAction={isAdmin ? () => { setEditing(null); setFormOpen(true); } : undefined}
             />
           )
         ) : (
@@ -263,14 +264,18 @@ export default function Suppliers() {
                             <Pencil />
                             Edit details
                           </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            destructive
-                            onSelect={() => setPendingDelete(supplier)}
-                          >
-                            <Trash2 />
-                            Delete
-                          </DropdownMenuItem>
+                          {isAdmin && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                destructive
+                                onSelect={() => setPendingDelete(supplier)}
+                              >
+                                <Trash2 />
+                                Delete
+                              </DropdownMenuItem>
+                            </>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

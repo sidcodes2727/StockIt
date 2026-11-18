@@ -87,16 +87,18 @@ export default function Categories() {
         title="Categories"
         description="How your catalogue is grouped. Categories also seed generated SKUs — a product in Medicines becomes MED-0007."
       >
-        <Button
-          size="sm"
-          onClick={() => {
-            setEditing(null);
-            setFormOpen(true);
-          }}
-        >
-          <FolderPlus />
-          New category
-        </Button>
+        {isAdmin && (
+          <Button
+            size="sm"
+            onClick={() => {
+              setEditing(null);
+              setFormOpen(true);
+            }}
+          >
+            <FolderPlus />
+            New category
+          </Button>
+        )}
       </PageHeader>
 
       <Card>
@@ -138,11 +140,8 @@ export default function Categories() {
               icon={Tags}
               title="No categories yet"
               description="Group your products so filters, reports and generated SKUs have something to work with."
-              actionLabel="New category"
-              onAction={() => {
-                setEditing(null);
-                setFormOpen(true);
-              }}
+              actionLabel={isAdmin ? "New category" : undefined}
+              onAction={isAdmin ? () => { setEditing(null); setFormOpen(true); } : undefined}
             />
           )
         ) : (

@@ -65,7 +65,7 @@ def get_category(category_id: int):
 
 
 @categories_bp.post("")
-@auth_required
+@role_required(UserRole.ADMIN)
 def create_category():
     payload = CategoryWriteSchema().load(request.get_json(silent=True) or {})
     name = payload["name"].strip()

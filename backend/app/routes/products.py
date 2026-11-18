@@ -220,7 +220,7 @@ def get_product(product_id: int):
 
 
 @products_bp.post("")
-@auth_required
+@role_required(UserRole.ADMIN)
 def create_product():
     payload = ProductCreateSchema().load(request.get_json(silent=True) or {})
     _validate_relations(payload.get("category_id"), payload.get("supplier_id"))

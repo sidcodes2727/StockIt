@@ -143,15 +143,17 @@ export default function Products() {
         description="Everything you stock, with each quantity measured against its own reorder level."
       >
         {isAdmin && (
-          <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
-            <Upload />
-            Import CSV
-          </Button>
+          <>
+            <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
+              <Upload />
+              Import CSV
+            </Button>
+            <Button size="sm" onClick={openCreate}>
+              <PackagePlus />
+              Add product
+            </Button>
+          </>
         )}
-        <Button size="sm" onClick={openCreate}>
-          <PackagePlus />
-          Add product
-        </Button>
       </PageHeader>
 
       <Card>
@@ -231,8 +233,8 @@ export default function Products() {
               icon={Boxes}
               title="Your catalogue is empty"
               description="Add your first product, or import a whole spreadsheet at once."
-              actionLabel="Add product"
-              onAction={openCreate}
+              actionLabel={isAdmin ? "Add product" : undefined}
+              onAction={isAdmin ? openCreate : undefined}
             />
           )
         ) : (
